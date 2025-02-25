@@ -1,5 +1,6 @@
 
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Header } from "@/components/Header";
 import { Hero } from "@/components/Hero";
 import { Footer } from "@/components/Footer";
@@ -9,6 +10,7 @@ import { LeadForm } from "@/components/LeadForm";
 import { useToast } from "@/components/ui/use-toast";
 
 const Index = () => {
+  const navigate = useNavigate();
   const [isUploadOpen, setIsUploadOpen] = useState(false);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [analysisStep, setAnalysisStep] = useState(0);
@@ -51,6 +53,10 @@ const Index = () => {
       title: "Success!",
       description: "Your savings report is being generated. We'll send it to your email shortly.",
     });
+    // Navigate to results page after short delay
+    setTimeout(() => {
+      navigate('/results');
+    }, 1500);
   };
 
   return (
