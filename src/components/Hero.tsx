@@ -3,7 +3,11 @@ import { ArrowRight, Zap } from "lucide-react";
 import { Button } from "./ui/button";
 import { motion } from "framer-motion";
 
-export const Hero = () => {
+interface HeroProps {
+  onUploadClick: () => void;
+}
+
+export const Hero = ({ onUploadClick }: HeroProps) => {
   return (
     <div className="relative min-h-screen flex items-center justify-center bg-gradient-to-b from-white to-secondary/30 pt-16">
       <div className="container mx-auto px-4">
@@ -34,7 +38,7 @@ export const Hero = () => {
             transition={{ duration: 0.6, delay: 0.2 }}
             className="space-y-6"
           >
-            <Button size="lg" className="rounded-full text-lg px-8 py-6">
+            <Button size="lg" className="rounded-full text-lg px-8 py-6" onClick={onUploadClick}>
               Upload Your Bill
               <ArrowRight className="ml-2 h-5 w-5" />
             </Button>

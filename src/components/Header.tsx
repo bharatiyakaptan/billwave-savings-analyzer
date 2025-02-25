@@ -2,7 +2,11 @@
 import { Menu } from "lucide-react";
 import { Button } from "./ui/button";
 
-export const Header = () => {
+interface HeaderProps {
+  onUploadClick: () => void;
+}
+
+export const Header = ({ onUploadClick }: HeaderProps) => {
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-md border-b border-gray-200">
       <div className="container mx-auto px-4 h-16 flex items-center justify-between">
@@ -18,7 +22,7 @@ export const Header = () => {
           <a href="#benefits" className="text-gray-600 hover:text-gray-900 transition-colors">
             Benefits
           </a>
-          <Button variant="default" size="sm">
+          <Button variant="default" size="sm" onClick={onUploadClick}>
             Upload Bill
           </Button>
         </nav>

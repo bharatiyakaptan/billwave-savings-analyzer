@@ -16,6 +16,10 @@ const Index = () => {
   const [isLeadFormOpen, setIsLeadFormOpen] = useState(false);
   const { toast } = useToast();
 
+  const handleUploadClick = () => {
+    setIsUploadOpen(true);
+  };
+
   const handleFileAccepted = (file: File) => {
     setIsUploadOpen(false);
     setIsAnalyzing(true);
@@ -51,8 +55,8 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-white">
-      <Header />
-      <Hero />
+      <Header onUploadClick={handleUploadClick} />
+      <Hero onUploadClick={handleUploadClick} />
       <Footer />
 
       <FileUpload
