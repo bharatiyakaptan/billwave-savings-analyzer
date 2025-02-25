@@ -117,7 +117,7 @@ const Results = () => {
                   <div>
                     <p className="font-medium">Load factor = ~30%</p>
                     <p className="text-sm text-gray-600">
-                      Reduce your contract demand as per your consumed units to achieve a load factor >75% and get
+                      Reduce your contract demand as per your consumed units to achieve a load factor {">"} 75% and get
                       load factor incentives on your monthly bill
                     </p>
                   </div>
