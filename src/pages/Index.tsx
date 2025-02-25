@@ -3,6 +3,8 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Header } from "@/components/Header";
 import { Hero } from "@/components/Hero";
+import { Blog } from "@/components/Blog";
+import { FAQ } from "@/components/FAQ";
 import { Footer } from "@/components/Footer";
 import { FileUpload } from "@/components/FileUpload";
 import { AnalysisProgress } from "@/components/AnalysisProgress";
@@ -63,6 +65,8 @@ const Index = () => {
     <div className="min-h-screen bg-white">
       <Header onUploadClick={handleUploadClick} />
       <Hero onUploadClick={handleUploadClick} />
+      <Blog />
+      <FAQ />
       <Footer />
 
       <FileUpload
