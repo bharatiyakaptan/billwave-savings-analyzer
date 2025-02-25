@@ -1,5 +1,5 @@
 
-import { ArrowLeft, Download, Share2, WhatsApp, Mail, Linkedin } from "lucide-react";
+import { ArrowLeft, Download, Share2, Mail, Linkedin } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Link } from "react-router-dom";
@@ -133,8 +133,8 @@ const Results = () => {
               Download PDF
             </Button>
             <Button variant="outline" className="flex items-center gap-2">
-              <WhatsApp className="h-4 w-4" />
-              Share via WhatsApp
+              <Share2 className="h-4 w-4" />
+              Share via Message
             </Button>
             <Button variant="outline" className="flex items-center gap-2">
               <Mail className="h-4 w-4" />
