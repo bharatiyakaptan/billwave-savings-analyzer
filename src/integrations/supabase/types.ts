@@ -9,7 +9,57 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      bill_submissions: {
+        Row: {
+          bill_file_path: string
+          bill_month: string
+          created_at: string
+          current_bill: number
+          current_demand: number
+          customer_name: string
+          email: string
+          id: string
+          name: string
+          optimized_bill: number
+          optimized_demand: number
+          phone: string
+          potential_savings: number
+          savings_per_year: number
+        }
+        Insert: {
+          bill_file_path: string
+          bill_month: string
+          created_at?: string
+          current_bill: number
+          current_demand: number
+          customer_name: string
+          email: string
+          id?: string
+          name: string
+          optimized_bill: number
+          optimized_demand: number
+          phone: string
+          potential_savings: number
+          savings_per_year: number
+        }
+        Update: {
+          bill_file_path?: string
+          bill_month?: string
+          created_at?: string
+          current_bill?: number
+          current_demand?: number
+          customer_name?: string
+          email?: string
+          id?: string
+          name?: string
+          optimized_bill?: number
+          optimized_demand?: number
+          phone?: string
+          potential_savings?: number
+          savings_per_year?: number
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

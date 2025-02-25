@@ -1,12 +1,19 @@
-
 import { ArrowLeft, Download, Share2, Mail, Linkedin } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
+import { useEffect } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/components/ui/use-toast";
 
 const Results = () => {
+  const { toast } = useToast();
+  const location = useLocation();
+  const formData = location.state?.formData;
+  const billFile = location.state?.billFile;
+
   const mockData = {
     customerName: "Hawkins Cookers Limited",
     billMonth: "January 2024",
@@ -32,6 +39,54 @@ const Results = () => {
       }
     }
   };
+
+  useEffect(() => {
+    const saveBillSubmission = async () => {
+      if (formData && billFile) {
+        try {
+          const { error } = await supabase
+            .from('bill_submissions')
+            .insert({
+              name: formData.name,
+              email: formData.email,
+              phone: formData.phone,
+              potential_savings: 15, // From LeadForm's potentialSavings prop
+              bill_file_path: billFile.path,
+              customer_name: mockData.customerName,
+              bill_month: mockData.billMonth,
+              current_demand: mockData.currentDemand,
+              current_bill: mockData.currentBill,
+              optimized_demand: mockData.optimizedDemand,
+              optimized_bill: mockData.optimizedBill,
+              savings_per_year: mockData.savingsPerYear
+            });
+
+          if (error) {
+            console.error('Error saving submission:', error);
+            toast({
+              title: "Error",
+              description: "Failed to save your submission. Please try again.",
+              variant: "destructive"
+            });
+          } else {
+            toast({
+              title: "Success",
+              description: "Your bill analysis has been saved successfully.",
+            });
+          }
+        } catch (err) {
+          console.error('Error in submission:', err);
+          toast({
+            title: "Error",
+            description: "An unexpected error occurred. Please try again.",
+            variant: "destructive"
+          });
+        }
+      }
+    };
+
+    saveBillSubmission();
+  }, [formData, billFile, toast]);
 
   return (
     <div className="min-h-screen bg-gray-50">
