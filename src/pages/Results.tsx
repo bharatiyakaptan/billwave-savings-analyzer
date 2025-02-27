@@ -169,4 +169,125 @@ const Results = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <Header onUploadClick={() => {
+      <Header />
+      <main className="container max-w-5xl mx-auto py-8 px-4 md:px-8">
+        <Button variant="ghost" size="sm" className="mb-6" asChild>
+          <Link to="/" className="flex items-center gap-1">
+            <ArrowLeft className="h-4 w-4" /> Back to Home
+          </Link>
+        </Button>
+
+        <div className="bg-white rounded-lg shadow-sm p-6 mb-8">
+          <h1 className="text-3xl font-bold mb-2">{displayData.customerName}</h1>
+          <p className="text-gray-500 mb-6">Bill Analysis for {displayData.billMonth}</p>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <Card className="p-6 bg-gradient-to-br from-green-50 to-emerald-50 border-green-100">
+              <h3 className="text-lg font-medium mb-2">Annual Savings</h3>
+              <p className="text-3xl font-bold text-green-600">₹{displayData.savingsPerYear}K</p>
+              <p className="text-sm text-gray-500 mt-1">Potential savings per year</p>
+            </Card>
+
+            <Card className="p-6">
+              <h3 className="text-lg font-medium mb-2">Current Bill</h3>
+              <p className="text-3xl font-bold">₹{displayData.currentBill.toFixed(2)}K</p>
+              <p className="text-sm text-gray-500 mt-1">With {displayData.currentDemand}kVA demand</p>
+            </Card>
+
+            <Card className="p-6 bg-gradient-to-br from-blue-50 to-indigo-50 border-blue-100">
+              <h3 className="text-lg font-medium mb-2">Optimized Bill</h3>
+              <p className="text-3xl font-bold text-blue-600">₹{displayData.optimizedBill.toFixed(2)}K</p>
+              <p className="text-sm text-gray-500 mt-1">With {displayData.optimizedDemand}kVA demand</p>
+            </Card>
+          </div>
+
+          <h2 className="text-xl font-bold mb-4">Detailed Recommendations</h2>
+          
+          <div className="space-y-6">
+            <div>
+              <h3 className="text-lg font-semibold mb-2">Load Management</h3>
+              <div className="bg-gray-50 p-4 rounded-lg">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  <div>
+                    <p className="text-sm font-medium text-gray-500">Load Factor</p>
+                    <p className="font-medium">Current: {displayData.recommendations.loadManagement.loadFactor.current}</p>
+                    <p className="font-medium text-blue-600">Target: {displayData.recommendations.loadManagement.loadFactor.target}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-gray-500">Power Factor</p>
+                    <p className="font-medium">Current: {displayData.recommendations.loadManagement.powerFactor.current}</p>
+                    <p className="font-medium text-green-600">Status: {displayData.recommendations.loadManagement.powerFactor.status}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-gray-500">Billed Demand</p>
+                    <p className="font-medium">Current: {displayData.recommendations.loadManagement.billedDemand.current}kVA</p>
+                    <p className="font-medium text-blue-600">Max Recorded: {displayData.recommendations.loadManagement.billedDemand.max}kVA</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <h3 className="text-lg font-semibold mb-2">Time of Day (TOD) Optimization</h3>
+              <div className="bg-gray-50 p-4 rounded-lg">
+                <p className="mb-2">Potential savings from peak hour optimization: ₹{displayData.recommendations.todOptimization.peakHourSavings}K per month</p>
+                <p className="text-sm text-gray-600">
+                  {displayData.recommendations.todOptimization.isHigher 
+                    ? "Your peak hour consumption is higher than optimal. Consider shifting loads to off-peak hours."
+                    : "Your peak hour consumption is well managed."}
+                </p>
+              </div>
+            </div>
+
+            <div>
+              <h3 className="text-lg font-semibold mb-2">Penalties & Discounts</h3>
+              <div className="bg-gray-50 p-4 rounded-lg">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  <div>
+                    <p className="text-sm font-medium text-gray-500">Delayed Payment</p>
+                    <p className="font-medium text-red-600">₹{displayData.recommendations.penalties.delayedPayment.toFixed(2)}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-gray-500">Prompt Payment Discount</p>
+                    <p className="font-medium text-green-600">₹{displayData.recommendations.penalties.promptDiscount.toFixed(2)}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-gray-500">Arrears Status</p>
+                    <p className="font-medium">{displayData.recommendations.penalties.arrearsStatus}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-blue-50 rounded-lg p-6 mb-8">
+          <h2 className="text-xl font-bold mb-4">Next Steps</h2>
+          <p className="mb-4">Based on our analysis, we recommend scheduling a consultation with our experts to implement these optimization strategies.</p>
+          <div className="flex flex-wrap gap-3">
+            <Button className="gap-2">
+              <Download className="h-4 w-4" /> Download Full Report
+            </Button>
+            <Button variant="outline" className="gap-2">
+              <Share2 className="h-4 w-4" /> Share Results
+            </Button>
+          </div>
+        </div>
+
+        <div className="flex justify-center mt-8">
+          <div className="flex gap-4">
+            <Button variant="outline" size="icon" title="Share via Email">
+              <Mail className="h-4 w-4" />
+            </Button>
+            <Button variant="outline" size="icon" title="Share on LinkedIn">
+              <Linkedin className="h-4 w-4" />
+            </Button>
+          </div>
+        </div>
+      </main>
+      <Footer />
+    </div>
+  );
+};
+
+export default Results;
