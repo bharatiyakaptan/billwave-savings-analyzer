@@ -5,18 +5,20 @@ import { Upload, X, FileText, AlertCircle } from "lucide-react";
 import { Button } from "./ui/button";
 import { Progress } from "./ui/progress";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "./ui/dialog";
+import { supabase } from "@/integrations/supabase/client";
 
 interface FileUploadProps {
   isOpen: boolean;
   onClose: () => void;
-  onFileAccepted: (file: File) => void;
+  onFileAccepted: (file: File, path: string) => void;
 }
 
 export const FileUpload = ({ isOpen, onClose, onFileAccepted }: FileUploadProps) => {
   const [uploadProgress, setUploadProgress] = useState(0);
   const [error, setError] = useState<string | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
 
-  const onDrop = useCallback((acceptedFiles: File[]) => {
+  const onDrop = useCallback(async (acceptedFiles: File[]) => {
     const file = acceptedFiles[0];
     if (file.type !== "application/pdf") {
       setError("Please upload a PDF file");
@@ -26,21 +28,49 @@ export const FileUpload = ({ isOpen, onClose, onFileAccepted }: FileUploadProps)
       setError("File size must be less than 25MB");
       return;
     }
+    
     setError(null);
-    simulateUpload(file);
-  }, []);
-
-  const simulateUpload = (file: File) => {
-    let progress = 0;
-    const interval = setInterval(() => {
-      progress += 10;
-      setUploadProgress(progress);
-      if (progress >= 100) {
-        clearInterval(interval);
-        onFileAccepted(file);
+    setIsUploading(true);
+    setUploadProgress(10);
+    
+    try {
+      // Generate a unique file path
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${crypto.randomUUID()}.${fileExt}`;
+      const filePath = fileName;
+      
+      // Upload to Supabase Storage
+      setUploadProgress(30);
+      const { data, error: uploadError } = await supabase.storage
+        .from('bill_uploads')
+        .upload(filePath, file, {
+          cacheControl: '3600',
+          upsert: false
+        });
+      
+      if (uploadError) {
+        console.error('Error uploading file:', uploadError);
+        setError('Failed to upload file. Please try again.');
+        setIsUploading(false);
+        return;
       }
-    }, 200);
-  };
+      
+      setUploadProgress(90);
+      
+      // Call the callback with the uploaded file and path
+      onFileAccepted(file, filePath);
+      setUploadProgress(100);
+      
+      // Reset after a short delay
+      setTimeout(() => {
+        setIsUploading(false);
+      }, 1000);
+    } catch (err) {
+      console.error('Upload error:', err);
+      setError('An unexpected error occurred. Please try again.');
+      setIsUploading(false);
+    }
+  }, [onFileAccepted]);
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
@@ -49,10 +79,11 @@ export const FileUpload = ({ isOpen, onClose, onFileAccepted }: FileUploadProps)
     },
     maxSize: 25 * 1024 * 1024,
     multiple: false,
+    disabled: isUploading
   });
 
   return (
-    <Dialog open={isOpen} onOpenChange={() => onClose()}>
+    <Dialog open={isOpen} onOpenChange={() => !isUploading && onClose()}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>Upload Your Electricity Bill</DialogTitle>
@@ -64,6 +95,7 @@ export const FileUpload = ({ isOpen, onClose, onFileAccepted }: FileUploadProps)
               relative rounded-lg border-2 border-dashed p-8 text-center hover:border-gray-400 transition-colors
               ${isDragActive ? "border-primary bg-primary/5" : "border-gray-300"}
               ${error ? "border-red-500" : ""}
+              ${isUploading ? "pointer-events-none opacity-50" : ""}
             `}
           >
             <input {...getInputProps()} />
