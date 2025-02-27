@@ -1,135 +1,191 @@
 
 import { useState, useCallback } from "react";
 import { useDropzone } from "react-dropzone";
-import { Upload, X, FileText, AlertCircle } from "lucide-react";
-import { Button } from "./ui/button";
-import { Progress } from "./ui/progress";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "./ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { FileText, X, Upload } from "lucide-react";
+import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 
 interface FileUploadProps {
   isOpen: boolean;
   onClose: () => void;
-  onFileAccepted: (file: File, path: string) => void;
+  onFileAccepted: (file: File) => void;
 }
 
 export const FileUpload = ({ isOpen, onClose, onFileAccepted }: FileUploadProps) => {
-  const [uploadProgress, setUploadProgress] = useState(0);
-  const [error, setError] = useState<string | null>(null);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [isUploading, setIsUploading] = useState(false);
+  const { toast } = useToast();
 
-  const onDrop = useCallback(async (acceptedFiles: File[]) => {
-    const file = acceptedFiles[0];
-    if (file.type !== "application/pdf") {
-      setError("Please upload a PDF file");
-      return;
-    }
-    if (file.size > 25 * 1024 * 1024) {
-      setError("File size must be less than 25MB");
-      return;
-    }
-    
-    setError(null);
-    setIsUploading(true);
-    setUploadProgress(10);
-    
-    try {
-      // Generate a unique file path
-      const fileExt = file.name.split('.').pop();
-      const fileName = `${crypto.randomUUID()}.${fileExt}`;
-      const filePath = fileName;
+  const onDrop = useCallback((acceptedFiles: File[]) => {
+    if (acceptedFiles.length > 0) {
+      const file = acceptedFiles[0];
       
-      // Upload to Supabase Storage
-      setUploadProgress(30);
-      const { data, error: uploadError } = await supabase.storage
-        .from('bill_uploads')
-        .upload(filePath, file, {
-          cacheControl: '3600',
-          upsert: false
+      // Validate file type
+      if (file.type !== "application/pdf") {
+        toast({
+          title: "Invalid file type",
+          description: "Please upload a PDF file.",
+          variant: "destructive",
         });
-      
-      if (uploadError) {
-        console.error('Error uploading file:', uploadError);
-        setError('Failed to upload file. Please try again.');
-        setIsUploading(false);
         return;
       }
       
-      setUploadProgress(90);
+      // Validate file size (5MB max)
+      if (file.size > 5 * 1024 * 1024) {
+        toast({
+          title: "File too large",
+          description: "Please upload a file less than 5MB.",
+          variant: "destructive",
+        });
+        return;
+      }
       
-      // Call the callback with the uploaded file and path
-      onFileAccepted(file, filePath);
-      setUploadProgress(100);
-      
-      // Reset after a short delay
-      setTimeout(() => {
-        setIsUploading(false);
-      }, 1000);
-    } catch (err) {
-      console.error('Upload error:', err);
-      setError('An unexpected error occurred. Please try again.');
-      setIsUploading(false);
+      setSelectedFile(file);
     }
-  }, [onFileAccepted]);
+  }, [toast]);
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
     accept: {
-      "application/pdf": [".pdf"],
+      'application/pdf': ['.pdf']
     },
-    maxSize: 25 * 1024 * 1024,
-    multiple: false,
-    disabled: isUploading
+    maxFiles: 1,
   });
 
+  const handleUpload = async () => {
+    if (!selectedFile) return;
+    
+    setIsUploading(true);
+    
+    try {
+      // Generate a unique filename
+      const fileExt = selectedFile.name.split('.').pop();
+      const fileName = `${crypto.randomUUID()}.${fileExt}`;
+      const filePath = `bill_uploads/${fileName}`;
+      
+      // Upload to Supabase Storage
+      const { data, error } = await supabase.storage
+        .from('bill_uploads')
+        .upload(filePath, selectedFile, {
+          cacheControl: '3600',
+          upsert: false
+        });
+      
+      if (error) {
+        throw error;
+      }
+      
+      // Add path to the file object
+      const fileWithPath = Object.assign(selectedFile, { path: filePath });
+      
+      // Call onFileAccepted with the file object
+      onFileAccepted(fileWithPath);
+      
+      toast({
+        title: "Success!",
+        description: "Your bill has been uploaded successfully.",
+      });
+    } catch (error: any) {
+      console.error("Error uploading file:", error);
+      toast({
+        title: "Upload Error",
+        description: error.message || "Failed to upload your bill. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  const resetSelection = () => {
+    setSelectedFile(null);
+  };
+
   return (
-    <Dialog open={isOpen} onOpenChange={() => !isUploading && onClose()}>
+    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Upload Your Electricity Bill</DialogTitle>
+          <DialogTitle>Upload Your Bill</DialogTitle>
+          <DialogDescription>
+            Upload your PDF electricity bill to analyze potential savings.
+          </DialogDescription>
         </DialogHeader>
-        <div className="grid gap-6">
+        
+        {!selectedFile ? (
           <div
             {...getRootProps()}
             className={`
-              relative rounded-lg border-2 border-dashed p-8 text-center hover:border-gray-400 transition-colors
-              ${isDragActive ? "border-primary bg-primary/5" : "border-gray-300"}
-              ${error ? "border-red-500" : ""}
-              ${isUploading ? "pointer-events-none opacity-50" : ""}
+              border-2 border-dashed rounded-lg p-8 text-center cursor-pointer
+              transition-colors duration-200 ease-in-out
+              ${isDragActive ? 'border-primary bg-primary-10' : 'border-neutral-30 hover:border-primary-50'}
             `}
           >
             <input {...getInputProps()} />
-            <div className="space-y-4">
-              <div className="flex justify-center">
-                <Upload className={`h-12 w-12 ${error ? "text-red-500" : "text-gray-400"}`} />
-              </div>
-              <div className="space-y-2">
-                <p className="text-base font-medium text-gray-900">
-                  Drag and drop your electricity bill PDF
+            <div className="flex flex-col items-center gap-3">
+              <Upload className="h-8 w-8 text-neutral-50" />
+              <div>
+                <p className="text-sm text-neutral-70 mb-1">
+                  <span className="font-semibold text-primary-60">Click to upload</span> or drag and drop
                 </p>
-                <p className="text-sm text-gray-500">or click to browse</p>
-              </div>
-              <div className="text-xs text-gray-500">
-                PDF format only, maximum 25MB
+                <p className="text-xs text-neutral-60">
+                  PDF files only (max 5MB)
+                </p>
               </div>
             </div>
           </div>
-
-          {error && (
-            <div className="flex items-center gap-2 text-sm text-error">
-              <AlertCircle className="h-4 w-4" />
-              {error}
+        ) : (
+          <div className="border rounded-lg p-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="bg-primary-10 p-2 rounded">
+                  <FileText className="h-5 w-5 text-primary-60" />
+                </div>
+                <div>
+                  <p className="text-sm font-medium truncate max-w-[180px]">
+                    {selectedFile.name}
+                  </p>
+                  <p className="text-xs text-neutral-60">
+                    {(selectedFile.size / 1024).toFixed(0)} KB
+                  </p>
+                </div>
+              </div>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={resetSelection}
+                disabled={isUploading}
+              >
+                <X className="h-4 w-4" />
+              </Button>
             </div>
-          )}
-
-          {uploadProgress > 0 && uploadProgress < 100 && (
-            <div className="space-y-2">
-              <Progress value={uploadProgress} className="h-2" />
-              <p className="text-sm text-gray-500 text-center">
-                Uploading... {uploadProgress}%
-              </p>
-            </div>
-          )}
+          </div>
+        )}
+        
+        <div className="flex justify-end gap-3">
+          <Button
+            variant="outline"
+            onClick={onClose}
+            disabled={isUploading}
+          >
+            Cancel
+          </Button>
+          <Button
+            onClick={handleUpload}
+            disabled={!selectedFile || isUploading}
+            className="relative"
+          >
+            {isUploading ? 'Uploading...' : 'Upload Bill'}
+            {isUploading && (
+              <span className="absolute inset-0 flex items-center justify-center">
+                <svg className="animate-spin h-5 w-5 text-current" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+              </span>
+            )}
+          </Button>
         </div>
       </DialogContent>
     </Dialog>

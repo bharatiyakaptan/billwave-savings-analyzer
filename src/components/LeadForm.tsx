@@ -4,7 +4,7 @@ import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { Checkbox } from "./ui/checkbox";
 import { Label } from "./ui/label";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "./ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "./ui/dialog";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -36,16 +36,20 @@ export const LeadForm = ({ isOpen, onClose, onSubmit, potentialSavings }: LeadFo
   });
 
   const handleSubmit = (data: z.infer<typeof formSchema>) => {
+    console.log("Form submitted with data:", data);
     onSubmit(data);
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={() => onClose()}>
+    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle className="text-center text-2xl">
             We Found Potential Savings of {potentialSavings}% on Your Bill!
           </DialogTitle>
+          <DialogDescription className="text-center">
+            Fill in your details to receive a complete savings report.
+          </DialogDescription>
         </DialogHeader>
 
         <Form {...form}>
