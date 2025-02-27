@@ -18,7 +18,6 @@ const Index = () => {
   const [analysisStep, setAnalysisStep] = useState(0);
   const [analysisProgress, setAnalysisProgress] = useState(0);
   const [isLeadFormOpen, setIsLeadFormOpen] = useState(false);
-  const [uploadedFile, setUploadedFile] = useState<any>(null);
   const { toast } = useToast();
 
   const handleUploadClick = () => {
@@ -26,8 +25,6 @@ const Index = () => {
   };
 
   const handleFileAccepted = (file: File) => {
-    console.log("File accepted:", file);
-    setUploadedFile(file);
     setIsUploadOpen(false);
     setIsAnalyzing(true);
     simulateAnalysis();
@@ -58,21 +55,9 @@ const Index = () => {
       title: "Success!",
       description: "Your savings report is being generated. We'll send it to your email shortly.",
     });
-    
-    // Navigate to results page after short delay with the form data and file
+    // Navigate to results page after short delay
     setTimeout(() => {
-      // Pass both the form data and the uploaded file to the results page
-      navigate('/results', { 
-        state: { 
-          formData: data,
-          billFile: {
-            name: uploadedFile.name,
-            path: uploadedFile.path || `bill_uploads/${crypto.randomUUID()}.pdf`,
-            type: uploadedFile.type,
-            size: uploadedFile.size
-          }
-        } 
-      });
+      navigate('/results');
     }, 1500);
   };
 
