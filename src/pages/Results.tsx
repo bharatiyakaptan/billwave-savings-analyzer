@@ -167,9 +167,14 @@ const Results = () => {
     );
   }
 
+  // Handle the upload click
+  const handleUploadClick = () => {
+    navigate('/');
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
-      <Header />
+      <Header onUploadClick={handleUploadClick} />
       <main className="container max-w-5xl mx-auto py-8 px-4 md:px-8">
         <Button variant="ghost" size="sm" className="mb-6" asChild>
           <Link to="/" className="flex items-center gap-1">
